@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz4</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --surface2: #242836;
+            --surface3: #121520;
+            --border: #2e3348;
+            --text: #e2e4ed;
+            --text-dim: #8b8fa7;
+            --accent: #6c8cff;
+            --accent-dim: #3d5299;
+            --green: #4ade80;
+            --green-bg: #14352a;
+            --green-border: #1a5c3a;
+            --red: #f87171;
+            --red-bg: #3b1a1a;
+            --red-border: #5c1a1a;
+            --yellow: #facc15;
+            --yellow-bg: #352e14;
+            --yellow-border: #5c4f1a;
+            --orange: #fb923c;
+            --cyan: #22d3ee;
+            --mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+            --sans: Inter, "Source Sans 3", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            --radius: 10px;
+        }
+
+        body.light {
+            --bg: #f0f2f5;
+            --surface: #ffffff;
+            --surface2: #e9ecef;
+            --surface3: #f7f7f8;
+            --border: #ced4da;
+            --text: #212529;
+            --text-dim: #6c757d;
+            --accent: #4263eb;
+            --accent-dim: #748ffc;
+            --green: #2b8a3e;
+            --green-bg: #d3f9d8;
+            --green-border: #8ce99a;
+            --red: #c92a2a;
+            --red-bg: #ffe3e3;
+            --red-border: #ffa8a8;
+            --yellow: #e67700;
+            --yellow-bg: #fff3bf;
+            --yellow-border: #ffd43b;
+            --orange: #d9480f;
+            --cyan: #0c8599;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+            to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--sans);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 24px 16px;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 1.7rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--accent);
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-dim);
+            margin-bottom: 18px;
+            font-size: 0.95rem;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            right: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            width: 48px;
+            height: 26px;
+            cursor: pointer;
+            padding: 2px;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-toggle .knob {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--accent);
+            transition: transform 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #fff;
+        }
+
+        .theme-toggle .knob::after { content: "🌙"; }
+        body.light .theme-toggle .knob::after { content: "☀️"; }
+        body.light .theme-toggle .knob { transform: translateX(22px); }
+
+        .file-loader {
+            background: var(--surface);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: border-color 0.2s ease;
+        }
+
+        .file-loader:hover { border-color: var(--accent-dim); }
+
+        .file-loader input[type="file"] { display: none; }
+
+        .file-loader label {
+            display: inline-block;
+            padding: 10px 24px;
+            background: var(--accent);
+            color: #fff;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.95rem;
+            transition: background 0.2s ease;
+        }
+
+        .file-loader label:hover { background: #5a7ae6; }
+
+        .file-status {
+            margin-top: 10px;
+            font-size: 0.88rem;
+            color: var(--text-dim);
+        }
+
+        .phase-indicator {
+            text-align: center;
+            padding: 10px 16px;
+            border-radius: var(--radius);
+            font-weight: 700;
+            font-size: 0.92rem;
+            margin-bottom: 16px;
+        }
+
+        .phase-indicator.normal {
+            background: var(--surface2);
+            color: var(--accent);
+            border: 1px solid var(--accent-dim);
+        }
+
+        .phase-indicator.review {
+            background: var(--yellow-bg);
+            color: var(--yellow);
+            border: 1px solid var(--yellow-border);
+        }
+
+        .stats {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            flex: 1;
+            min-width: 160px;
+            text-align: center;
+            background: var(--surface);
+            padding: 12px 8px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .stat-label {
+            font-size: 0.74rem;
+            color: var(--text-dim);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            font-family: var(--mono);
+        }
+
+        .stat-value.correct { color: var(--green); }
+        .stat-value.incorrect { color: var(--red); }
+        .stat-value.percentage { color: var(--accent); }
+        .stat-value.tries { color: var(--orange); }
+
+        .counter {
+            text-align: center;
+            color: var(--text-dim);
+            margin-bottom: 16px;
+            font-size: 0.88rem;
+        }
+
+        .points-badge,
+        .exam-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        .points-badge {
+            background: var(--accent-dim);
+            color: #fff;
+        }
+
+        .exam-badge {
+            background: var(--surface2);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+        }
+
+        .quiz-container { display: none; }
+        .quiz-container.active { display: block; }
+
+        .loading-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-dim);
+            font-size: 1rem;
+        }
+
+        .columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .columns.single-col {
+            grid-template-columns: 1fr;
+            max-width: 920px;
+            margin: 0 auto;
+        }
+
+        .col-left, .col-right {
+            min-width: 0;
+        }
+
+        @media (max-width: 980px) {
+            .columns {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .figure-preview,
+        .question-card,
+        .answer,
+        .rich-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+
+        .figure-preview,
+        .question-card,
+        .rich-panel {
+            padding: 18px;
+        }
+
+        .figure-preview {
+            margin-bottom: 16px;
+        }
+
+        .figure-preview-label,
+        .user-preview-label {
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .figure-iframe,
+        .user-iframe {
+            width: 100%;
+            height: 340px;
+            border: 2px solid var(--accent-dim);
+            border-radius: var(--radius);
+            background: #fff;
+        }
+
+        body.light .figure-iframe,
+        body.light .user-iframe {
+            border-color: var(--border);
+        }
+
+        .question-image {
+            display: none;
+            width: 100%;
+            max-height: 420px;
+            object-fit: contain;
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            background: var(--surface3);
+        }
+
+        .question {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text);
+        }
+
+        .question p,
+        .rich-content p { margin: 0 0 0.7rem 0; }
+
+        .question div,
+        .rich-content div { margin: 0 0 0.45rem 0; }
+
+        .question ul,
+        .question ol,
+        .rich-content ul,
+        .rich-content ol {
+            padding-left: 1.3rem;
+            margin: 0.6rem 0;
+        }
+
+        .question pre,
+        .answer pre,
+        .rich-content pre,
+        .code-block {
+            font-family: var(--mono);
+            background: var(--surface3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin: 10px 0;
+            overflow-x: auto;
+            line-height: 1.55;
+            font-size: 0.86rem;
+            color: var(--text);
+            white-space: pre-wrap;
+        }
+
+        .question code,
+        .answer code,
+        .rich-content code {
+            font-family: var(--mono);
+            background: var(--surface2);
+            border-radius: 6px;
+            padding: 2px 6px;
+            font-size: 0.9em;
+            color: var(--orange);
+        }
+
+        .details-box {
+            margin-top: 14px;
+            padding: 14px 16px;
+            background: var(--surface3);
+            border-left: 4px solid var(--cyan);
+            border-radius: 0 8px 8px 0;
+            color: var(--text);
+        }
+
+        .details-box strong {
+            color: var(--cyan);
+        }
+
+        .answer-image {
+            width: 100%;
+            max-height: 420px;
+            object-fit: contain;
+            margin-top: 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--surface3);
+        }
+
+        .multi-select-hint {
+            font-size: 0.83rem;
+            color: var(--yellow);
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+
+        .options { margin: 0; }
+
+        .option {
+            padding: 12px 14px;
+            margin: 8px 0;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .option:hover {
+            border-color: var(--accent-dim);
+            background: var(--surface2);
+        }
+
+        .option.selected {
+            background: #1a2340;
+            border-color: var(--accent);
+        }
+
+        body.light .option.selected {
+            background: #e5edff;
+        }
+
+        .option.correct {
+            background: var(--green-bg);
+            border-color: var(--green);
+        }
+
+        .option.incorrect {
+            background: var(--red-bg);
+            border-color: var(--red);
+        }
+
+        .option.missed {
+            background: var(--yellow-bg);
+            border-color: var(--yellow);
+        }
+
+        .option-checkbox {
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            transition: all 0.2s ease;
+            font-size: 13px;
+            color: transparent;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .option.selected .option-checkbox {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .option-text {
+            flex: 1;
+            font-size: 0.94rem;
+            line-height: 1.55;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 0.96rem;
+            line-height: 1.5;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-sizing: border-box;
+            background: var(--surface);
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s ease, background 0.2s ease;
+            font-family: var(--sans);
+        }
+
+        textarea.code-input,
+        textarea.free-answer {
+            min-height: 150px;
+            resize: vertical;
+            font-family: var(--mono);
+            font-size: 0.89rem;
+            tab-size: 4;
+        }
+
+        textarea.free-answer.theory {
+            min-height: 120px;
+            font-family: var(--sans);
+            font-size: 0.96rem;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            border-color: var(--accent);
+        }
+
+        input.correct,
+        textarea.correct {
+            border-color: var(--green);
+            background: var(--green-bg);
+        }
+
+        input.incorrect,
+        textarea.incorrect {
+            border-color: var(--red);
+            background: var(--red-bg);
+        }
+
+        .tabs-bar {
+            display: flex;
+            gap: 2px;
+            background: var(--surface3);
+            border-radius: var(--radius) var(--radius) 0 0;
+            border: 1px solid var(--border);
+            border-bottom: none;
+            overflow: hidden;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 16px;
+            background: var(--surface);
+            color: var(--text-dim);
+            border: none;
+            cursor: pointer;
+            font-family: var(--mono);
+            font-size: 0.82rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            background: var(--surface2);
+            color: var(--text);
+        }
+
+        .tab-btn.active {
+            background: var(--surface2);
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .tab-panel {
+            display: none;
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+
+        .tab-panel.active { display: block; }
+
+        .tab-panel textarea.code-input {
+            border: none;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+
+        .answer {
+            margin-top: 16px;
+            padding: 16px;
+            line-height: 1.65;
+            display: none;
+        }
+
+        .answer.show { display: block; }
+
+        .answer.correct-answer {
+            background: var(--green-bg);
+            border-color: var(--green-border);
+            color: var(--text);
+        }
+
+        .answer.incorrect-answer {
+            background: var(--red-bg);
+            border-color: var(--red-border);
+            color: var(--text);
+        }
+
+        .answer.warning-answer {
+            background: var(--yellow-bg);
+            border-color: var(--yellow-border);
+            color: var(--text);
+        }
+
+        .answer strong.result-ok { color: var(--green); }
+        .answer strong.result-ko { color: var(--red); }
+        .answer strong.result-warn { color: var(--yellow); }
+
+        .answer ul {
+            padding-left: 1.2rem;
+            margin: 0.7rem 0;
+        }
+
+        .answer .tries-info {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: var(--orange);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons button,
+        .buttons button,
+        .completion-message button,
+        .btn-reset {
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-family: var(--sans);
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        .action-buttons button,
+        .buttons button {
+            flex: 1;
+            min-width: 180px;
+            padding: 11px 16px;
+            font-size: 0.93rem;
+        }
+
+        .btn-correct-m {
+            background: var(--green);
+            color: #000;
+        }
+
+        .btn-correct-m:hover { background: #3cca6f; }
+
+        .btn-incorrect-m {
+            background: var(--red);
+            color: #fff;
+        }
+
+        .btn-incorrect-m:hover { background: #e55a5a; }
+
+        .btn-retry {
+            background: var(--yellow);
+            color: #000;
+        }
+
+        .btn-retry:hover { background: #e5b800; }
+
+        .btn-skip {
+            background: var(--surface2);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+        }
+
+        .btn-skip:hover {
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .buttons button {
+            padding: 12px 20px;
+            font-size: 0.95rem;
+        }
+
+        .btn-prev {
+            background: var(--surface2);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+        }
+
+        .btn-prev:hover {
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        .btn-check {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .btn-check:hover { background: #5a7ae6; }
+
+        .btn-next {
+            background: var(--green);
+            color: #000;
+        }
+
+        .btn-next:hover { background: #3cca6f; }
+
+        .btn-reset {
+            width: 100%;
+            margin-top: 10px;
+            padding: 11px;
+            background: var(--surface);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            font-size: 0.86rem;
+        }
+
+        .btn-reset:hover {
+            color: var(--yellow);
+            border-color: var(--yellow);
+        }
+
+        .user-preview {
+            margin-top: 16px;
+        }
+
+        .syntax-errors {
+            margin-top: 8px;
+            padding: 10px 14px;
+            background: var(--red-bg);
+            border: 1px solid var(--red-border);
+            border-radius: var(--radius);
+            font-family: var(--mono);
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: var(--text);
+            max-height: 160px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .syntax-errors.show { display: block; }
+
+        .syntax-errors .err-title {
+            font-weight: 800;
+            margin-bottom: 4px;
+            font-family: var(--sans);
+            font-size: 0.82rem;
+            color: var(--red);
+        }
+
+        .syntax-errors .err-item {
+            padding: 2px 0;
+            border-bottom: 1px solid var(--red-border);
+        }
+
+        .syntax-errors .err-item:last-child { border-bottom: none; }
+
+        .completion-message {
+            text-align: center;
+            padding: 40px;
+            background: var(--green-bg);
+            border: 1px solid var(--green-border);
+            border-radius: var(--radius);
+            margin: 20px 0;
+        }
+
+        .completion-message h2 {
+            color: var(--green);
+            margin-bottom: 16px;
+        }
+
+        .completion-message p {
+            color: var(--text);
+            font-size: 1rem;
+            margin: 8px 0;
+        }
+
+        .completion-message button {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: var(--green);
+            color: #000;
+            font-size: 1rem;
+        }
+
+        .completion-message button:hover { background: #3cca6f; }
+
+        .hidden { display: none !important; }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-row">
+            <h1>Quiz4</h1>
+            <div class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
+                <div class="knob"></div>
+            </div>
+        </div>
+
+
+        <div class="file-loader">
+            <label for="fileInput">Cargar archivo JSON con preguntas</label>
+            <input type="file" id="fileInput" accept=".json" onchange="loadQuestionsFromFile(event)">
+            <div class="file-status" id="fileStatus">Ningún archivo cargado</div>
+        </div>
+
+        <div class="quiz-container" id="quizContainer">
+            <div id="phaseIndicator" class="phase-indicator normal"></div>
+
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-label">Aciertos</div>
+                    <div class="stat-value correct" id="correct">0</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Fallos</div>
+                    <div class="stat-value incorrect" id="incorrect">0</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Porcentaje</div>
+                    <div class="stat-value percentage" id="percentage">0%</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Intentos</div>
+                    <div class="stat-value tries" id="totalTries">0</div>
+                </div>
+            </div>
+
+            <div class="counter">
+                Pregunta <span id="current">1</span> de <span id="total">0</span>
+                <span class="points-badge hidden" id="pointsBadge"></span>
+                <span class="exam-badge hidden" id="examBadge"></span>
+            </div>
+
+            <div class="columns" id="columnsLayout">
+                <div class="col-left">
+                    <div class="figure-preview hidden" id="figurePreview">
+                        <div class="figure-preview-label">Figura objetivo</div>
+                        <iframe class="figure-iframe" id="figureIframe" sandbox="allow-scripts"></iframe>
+                    </div>
+
+                    <div class="question-card">
+                        <img id="imgQ" class="question-image" alt="Imagen de la pregunta">
+                        <div class="question rich-content" id="question"></div>
+                    </div>
+                </div>
+
+                <div class="col-right">
+                    <div id="multiSelectHint"></div>
+                    <div id="optionsContainer"></div>
+
+                    <div class="user-preview hidden" id="userPreviewContainer">
+                        <div class="user-preview-label">Tu resultado renderizado</div>
+                        <iframe class="user-iframe" id="userPreviewIframe" sandbox="allow-scripts"></iframe>
+                        <div class="syntax-errors" id="syntaxErrors"></div>
+                    </div>
+
+                    <div class="answer" id="answer"></div>
+                </div>
+            </div>
+
+            <div class="buttons" id="navButtons">
+                <button class="btn-prev" onclick="prevQuestion()">← Volver</button>
+                <button class="btn-check" id="checkBtn" onclick="checkAnswer()">Corregir</button>
+                <button class="btn-next" onclick="nextQuestion()">Siguiente →</button>
+            </div>
+
+            <button class="btn-reset" onclick="resetStats()">Resetear contador</button>
+        </div>
+
+        <div class="loading-message" id="loadingMessage">
+            Carga un archivo JSON para comenzar.
+        </div>
+    </div>
+
+    <div class="subtitle">
+        Historial de versiones:
+            <br>V1 - Cargar de preguntas en formato json, tipo test y preguntas de respuesta corta
+            <br>V2 - Soporte de imágenes en base64 en el json, sección de "details" para explicaciones 
+            <br>extra y renderizado de latex
+            <br>V3 - Soporte para HTML, CSS y Javascript 
+            <br>V4 - Fusionadas funcionalidades de V2 y V3
+            <br>V4.1 - Parcheado que las respuestas se ordenen aleatoriamente
+            <br>V4.2 - Selección de respuesta con teclado
+            <br>V4.3 - Guardado de sesión persistente
+    </div>
+    <script>
+        /* ═══════════════════ CONFIG / STATE ═══════════════════ */
+        const JQUERY_CDN = "https://code.jquery.com/jquery-3.7.1.min.js";
+        const SAFE_HTML_TAG_RE = /<(?:\/?(?:div|span|p|br|ul|ol|li|strong|em|b|i|u|img|table|thead|tbody|tr|td|th|code|pre|blockquote|sub|sup|a|hr|small|mark|kbd|details|summary)\b|!--)/i;
+
+        let allQuestions = [];
+        let questions = [];
+        let currentQuestion = 0;
+        let stats = { correct: 0, incorrect: 0 };
+        let selectedOptions = new Set();
+        let answerChecked = false;
+
+        let failedQuestions = [];
+        let isReviewMode = false;
+        let reviewRound = 0;
+
+        let triesMap = new Map();
+        let totalTriesCount = 0;
+
+        if (localStorage.getItem("quiz4-theme") === "light") {
+            document.body.classList.add("light");
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle("light");
+            localStorage.setItem("quiz4-theme", document.body.classList.contains("light") ? "light" : "dark");
+        }
+
+        /* ═══════════════════ FILE LOADING ═══════════════════ */
+        function loadQuestionsFromFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!Array.isArray(data)) {
+                        throw new Error("El JSON debe ser un array de preguntas.");
+                    }
+
+                    allQuestions = data.map(normalizeQuestionObject);
+                    if (allQuestions.length === 0) {
+                        throw new Error("El archivo no contiene preguntas.");
+                    }
+
+                    document.getElementById("fileStatus").textContent = file.name + " · " + allQuestions.length + " preguntas";
+                    document.getElementById("loadingMessage").style.display = "none";
+                    document.getElementById("quizContainer").classList.add("active");
+
+                    initQuiz();
+                } catch (err) {
+                    console.error(err);
+                    alert("No se pudo cargar el JSON: " + err.message);
+                    document.getElementById("fileStatus").textContent = "Error al cargar el archivo";
+                }
+            };
+            reader.readAsText(file, "utf-8");
+        }
+
+        function normalizeQuestionObject(q) {
+            const normalized = { ...q };
+
+            if (!normalized.type) {
+                if (Array.isArray(normalized.options)) normalized.type = "multiple";
+                else if (normalized.files && normalized.figure) normalized.type = "figure";
+                else if (normalized.files) normalized.type = "code";
+                else normalized.type = "theory";
+            }
+
+            if (normalized.img && !normalized.img_q) {
+                normalized.img_q = normalized.img;
+            }
+
+            if (!Array.isArray(normalized.options)) {
+                normalized.options = [];
+            }
+
+            if (normalized.q == null) normalized.q = "";
+            if (normalized.a == null) normalized.a = "";
+
+            return normalized;
+        }
+
+        function initQuiz(forceRestart = false) {
+            selectedOptions = new Set();
+            answerChecked = false;
+
+            let restored = false;
+            if (!forceRestart) {
+                restored = loadProgress();
+            }
+
+            if (!restored) {
+                questions = shuffleArray(allQuestions.slice());
+                currentQuestion = 0;
+                stats = { correct: 0, incorrect: 0 };
+                failedQuestions = [];
+                isReviewMode = false;
+                reviewRound = 0;
+                triesMap = new Map();
+                totalTriesCount = 0;
+            }
+
+            updateStats();
+            updatePhaseIndicator();
+            document.getElementById("navButtons").style.display = "flex";
+            document.getElementById("columnsLayout").classList.remove("single-col");
+            loadQuestion();
+
+            if (restored) {
+                const raw = localStorage.getItem(SAVE_KEY);
+                const ts = raw ? JSON.parse(raw).ts : null;
+                if (ts) showResumeToast(ts);
+            }
+        }
+
+        function shuffleArray(arr) {
+            const copy = arr.slice();
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
+        /* ═══════════════════ PERSISTENCIA (localStorage) ═══════════════════ */
+        const SAVE_KEY = "quiz4-session";
+
+        /** Huella ligera del JSON cargado para detectar cambios de archivo */
+        function computeFingerprint(data) {
+            // Usa la longitud + primeras/últimas preguntas como huella rápida
+            const n = data.length;
+            const sample = [data[0], data[Math.floor(n / 2)], data[n - 1]]
+                .filter(Boolean)
+                .map(q => (q.q || "") + (q.a || ""))
+                .join("|");
+            return n + ":" + sample.length + ":" + sample.slice(0, 120);
+        }
+
+        function saveProgress() {
+            if (!allQuestions.length) return;
+            try {
+                // Guarda los índices de las preguntas en allQuestions en lugar de los objetos completos
+                const questionIndices = questions.map(q => allQuestions.indexOf(q));
+                const failedIndices = failedQuestions.map(q => allQuestions.indexOf(q));
+                const triesObj = {};
+                triesMap.forEach((v, k) => { triesObj[k] = v; });
+
+                const session = {
+                    fingerprint: computeFingerprint(allQuestions),
+                    questionIndices,
+                    currentQuestion,
+                    stats,
+                    failedIndices,
+                    isReviewMode,
+                    reviewRound,
+                    triesObj,
+                    totalTriesCount,
+                    ts: Date.now()
+                };
+                localStorage.setItem(SAVE_KEY, JSON.stringify(session));
+            } catch (e) {
+                console.warn("No se pudo guardar el progreso:", e);
+            }
+        }
+
+        function loadProgress() {
+            try {
+                const raw = localStorage.getItem(SAVE_KEY);
+                if (!raw) return false;
+                const session = JSON.parse(raw);
+                if (!session || session.fingerprint !== computeFingerprint(allQuestions)) return false;
+
+                questions = session.questionIndices.map(i => allQuestions[i]).filter(Boolean);
+                currentQuestion = Math.min(session.currentQuestion, questions.length - 1);
+                stats = session.stats || { correct: 0, incorrect: 0 };
+                failedQuestions = (session.failedIndices || []).map(i => allQuestions[i]).filter(Boolean);
+                isReviewMode = session.isReviewMode || false;
+                reviewRound = session.reviewRound || 0;
+                triesMap = new Map(Object.entries(session.triesObj || {}));
+                triesMap.forEach((v, k) => triesMap.set(k, Number(v)));
+                totalTriesCount = session.totalTriesCount || 0;
+                return true;
+            } catch (e) {
+                console.warn("No se pudo restaurar el progreso:", e);
+                return false;
+            }
+        }
+
+        function clearProgress() {
+            localStorage.removeItem(SAVE_KEY);
+        }
+
+        function showResumeToast(saved) {
+            const toast = document.createElement("div");
+            const date = new Date(saved);
+            const timeStr = date.toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" });
+            const dateStr = date.toLocaleDateString("es", { day: "numeric", month: "short" });
+
+            const span = document.createElement("span");
+            span.textContent = "\u2713 Progreso restaurado \u2014 guardado el " + dateStr + " a las " + timeStr;
+
+            const btn = document.createElement("button");
+            btn.textContent = "\u21BA Reiniciar";
+            btn.title = "Empezar desde cero";
+            btn.onclick = function() { toast.remove(); clearProgress(); restartQuiz(); };
+            btn.style.cssText = "background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);padding:5px 12px;border-radius:7px;cursor:pointer;font-size:0.82rem;font-weight:700;";
+
+            toast.appendChild(span);
+            toast.appendChild(btn);
+            toast.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--green-border);color:var(--green);padding:12px 18px;border-radius:10px;font-size:0.88rem;font-weight:600;z-index:9999;display:flex;align-items:center;gap:14px;box-shadow:0 4px 20px rgba(0,0,0,0.4);animation:fadeInUp 0.3s ease;";
+
+            document.body.appendChild(toast);
+            setTimeout(function() { if (toast.parentElement) toast.remove(); }, 5000);
+        }
+
+        /* ═══════════════════ RICH CONTENT / LATEX ═══════════════════ */
+        function escapeHTML(str) {
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        function looksLikeRichHTML(str) {
+            return SAFE_HTML_TAG_RE.test(String(str || ""));
+        }
+
+        function sanitizeHTML(str) {
+            const template = document.createElement("template");
+            template.innerHTML = String(str || "");
+
+            template.content.querySelectorAll("script").forEach(el => el.remove());
+
+            template.content.querySelectorAll("*").forEach(el => {
+                [...el.attributes].forEach(attr => {
+                    const name = attr.name.toLowerCase();
+                    const value = String(attr.value || "");
+                    if (name.startsWith("on")) {
+                        el.removeAttribute(attr.name);
+                    }
+                    if ((name === "href" || name === "src") && /^\s*javascript:/i.test(value)) {
+                        el.removeAttribute(attr.name);
+                    }
+                });
+            });
+
+            return template.innerHTML;
+        }
+
+        function richToHTML(value) {
+            const str = value == null ? "" : String(value);
+            if (looksLikeRichHTML(str)) {
+                return sanitizeHTML(str);
+            }
+            return escapeHTML(str).replace(/\n/g, "<br>");
+        }
+
+        function setRichContent(el, value) {
+            el.innerHTML = richToHTML(value);
+            renderMathSafely(el);
+        }
+
+        function renderMathSafely(root) {
+            if (typeof renderMathInElement !== "function" || !root) return;
+            try {
+                renderMathInElement(root, {
+                    delimiters: [
+                        { left: "$$", right: "$$", display: true },
+                        { left: "\\[", right: "\\]", display: true },
+                        { left: "$", right: "$", display: false },
+                        { left: "\\(", right: "\\)", display: false }
+                    ],
+                    ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"],
+                    throwOnError: false
+                });
+            } catch (err) {
+                console.warn("KaTeX:", err);
+            }
+        }
+
+        /* ═══════════════════ HELPERS ═══════════════════ */
+        function getQuestionKey(q) {
+            return [q.q || "", q.a || "", q.exam || "", q.points || "", q.type || ""].join("||");
+        }
+
+        function getCorrectAnswers(q) {
+            if (typeof q.a === "string" && q.a.includes("|OR|")) {
+                return q.a.split("|OR|").map(x => x.trim()).filter(Boolean);
+            }
+            return [String(q.a || "").trim()].filter(Boolean);
+        }
+
+        function normalizeAnswer(str) {
+            return String(str || "")
+                .replace(/\r\n/g, "\n")
+                .trim()
+                .toLowerCase()
+                .replace(/\s+/g, " ");
+        }
+
+        function triesInfoHTML(q) {
+            const tries = triesMap.get(getQuestionKey(q)) || 1;
+            if (tries > 1) {
+                return '<span class="tries-info">Intentos en esta pregunta: ' + tries + '</span>';
+            }
+            return "";
+        }
+
+        function addToFailedQuestions(q) {
+            const key = getQuestionKey(q);
+            if (!failedQuestions.some(item => getQuestionKey(item) === key)) {
+                failedQuestions.push(q);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById("correct").textContent = stats.correct;
+            document.getElementById("incorrect").textContent = stats.incorrect;
+            const total = stats.correct + stats.incorrect;
+            document.getElementById("percentage").textContent = total > 0 ? Math.round((stats.correct / total) * 100) + "%" : "0%";
+            document.getElementById("totalTries").textContent = totalTriesCount;
+        }
+
+        function updatePhaseIndicator() {
+            const el = document.getElementById("phaseIndicator");
+            if (isReviewMode) {
+                el.className = "phase-indicator review";
+                el.textContent = "Revisión · Ronda " + reviewRound + " · " + questions.length + " pregunta" + (questions.length === 1 ? "" : "s");
+            } else {
+                el.className = "phase-indicator normal";
+                el.textContent = "Primera vuelta";
+            }
+        }
+
+        function appendExtrasHTML(q, baseHTML) {
+            let html = baseHTML || "";
+
+            if (q.details && String(q.details).trim().length > 0) {
+                html += '<div class="details-box rich-content"><strong>Explicación:</strong><br>' + richToHTML(q.details) + '</div>';
+            }
+
+            if (q.img_a && String(q.img_a).trim().length > 0) {
+                html += '<img src="' + escapeHTML(String(q.img_a)) + '" class="answer-image" alt="Imagen explicativa">';
+            }
+
+            return html;
+        }
+
+        function applyExtrasRendering(answerDiv) {
+            renderMathSafely(answerDiv);
+        }
+
+        function enableTabKey(textarea) {
+            textarea.addEventListener("keydown", function(e) {
+                if (e.key === "Tab") {
+                    e.preventDefault();
+                    const start = this.selectionStart;
+                    const end = this.selectionEnd;
+                    this.value = this.value.substring(0, start) + "    " + this.value.substring(end);
+                    this.selectionStart = this.selectionEnd = start + 4;
+                }
+            });
+        }
+
+        function clearCodePreview() {
+            const userPrevContainer = document.getElementById("userPreviewContainer");
+            const userPrevIframe = document.getElementById("userPreviewIframe");
+            const errBox = document.getElementById("syntaxErrors");
+            userPrevContainer.classList.add("hidden");
+            userPrevIframe.srcdoc = "";
+            errBox.classList.remove("show");
+            errBox.innerHTML = "";
+        }
+
+        /* ═══════════════════ LOAD QUESTION ═══════════════════ */
+        function loadQuestion() {
+            focusedOptionIndex = -1;
+            const q = questions[currentQuestion];
+            document.getElementById("current").textContent = currentQuestion + 1;
+            document.getElementById("total").textContent = questions.length;
+
+            const pointsBadge = document.getElementById("pointsBadge");
+            pointsBadge.textContent = q.points ? q.points + " pts" : "";
+            pointsBadge.classList.toggle("hidden", !q.points);
+
+            const examBadge = document.getElementById("examBadge");
+            examBadge.textContent = q.exam || "";
+            examBadge.classList.toggle("hidden", !q.exam);
+
+            const questionEl = document.getElementById("question");
+            setRichContent(questionEl, q.q || "");
+
+            const imgEl = document.getElementById("imgQ");
+            const questionImg = q.img_q || q.img || "";
+            if (questionImg && String(questionImg).trim().length > 0) {
+                imgEl.src = String(questionImg);
+                imgEl.style.display = "block";
+            } else {
+                imgEl.src = "";
+                imgEl.style.display = "none";
+            }
+
+            const cols = document.getElementById("columnsLayout");
+            const isFigure = (q.type === "figure" || q.type === "code") && !!q.figure;
+            cols.classList.toggle("single-col", !isFigure);
+
+            const figPrev = document.getElementById("figurePreview");
+            const figIframe = document.getElementById("figureIframe");
+            if (isFigure) {
+                figPrev.classList.remove("hidden");
+                figIframe.srcdoc = String(q.figure);
+            } else {
+                figPrev.classList.add("hidden");
+                figIframe.srcdoc = "";
+            }
+
+            clearCodePreview();
+
+            const container = document.getElementById("optionsContainer");
+            const hintDiv = document.getElementById("multiSelectHint");
+            container.innerHTML = "";
+            hintDiv.innerHTML = "";
+            selectedOptions = new Set();
+            answerChecked = false;
+
+            const checkBtn = document.getElementById("checkBtn");
+            checkBtn.textContent = "Corregir";
+            checkBtn.onclick = checkAnswer;
+            checkBtn.style.display = "";
+
+            if (q.type === "multiple") {
+                buildMultipleChoice(q, container, hintDiv);
+            } else if ((q.type === "figure" || q.type === "code") && Array.isArray(q.files) && q.files.length > 1) {
+                buildTabbedEditor(q, container);
+            } else if ((q.type === "figure" || q.type === "code") && Array.isArray(q.files) && q.files.length === 1) {
+                buildSingleFileEditor(container, q.files[0]);
+            } else if (q.type === "exact") {
+                buildExactInput(container);
+            } else {
+                buildSingleEditor(q, container, null, q.type);
+            }
+
+            const answerDiv = document.getElementById("answer");
+            answerDiv.className = "answer";
+            answerDiv.innerHTML = "";
+        }
+
+        /* ═══════════════════ BUILD UI ═══════════════════ */
+        function buildMultipleChoice(q, container, hintDiv) {
+            const correctAnswers = getCorrectAnswers(q);
+            const isMulti = correctAnswers.length > 1;
+
+            if (isMulti) {
+                hintDiv.innerHTML = '<div class="multi-select-hint">Esta pregunta tiene múltiples respuestas correctas. Selecciona todas.</div>';
+            }
+
+            const optionsDiv = document.createElement("div");
+            optionsDiv.className = "options";
+
+            q.options = shuffleArray(q.options);
+
+            q.options.forEach((opt, idx) => {
+                const row = document.createElement("div");
+                row.className = "option";
+                row.onclick = () => selectOption(idx, isMulti);
+
+                const cb = document.createElement("div");
+                cb.className = "option-checkbox";
+                cb.textContent = "✓";
+
+                const txt = document.createElement("div");
+                txt.className = "option-text rich-content";
+                setRichContent(txt, opt);
+
+                row.appendChild(cb);
+                row.appendChild(txt);
+                optionsDiv.appendChild(row);
+            });
+
+            container.appendChild(optionsDiv);
+        }
+
+        function buildExactInput(container) {
+            const input = document.createElement("input");
+            input.type = "text";
+            input.id = "userAnswer";
+            input.placeholder = "Escribe tu respuesta exacta…";
+            container.appendChild(input);
+        }
+
+        function buildSingleFileEditor(container, file) {
+            const ta = document.createElement("textarea");
+            ta.className = "code-input";
+            ta.id = "codeInput0";
+            ta.placeholder = (file?.name || "archivo") + "…";
+            ta.spellcheck = false;
+            ta.value = getFileInitialContent(file);
+            enableTabKey(ta);
+            container.appendChild(ta);
+        }
+
+        function buildSingleEditor(q, container, filename, typeName) {
+            const useTextarea = typeName !== "exact";
+            const el = document.createElement(useTextarea ? "textarea" : "input");
+
+            if (useTextarea) {
+                el.className = "free-answer" + (typeName === "theory" ? " theory" : " code-input");
+                el.id = "userAnswer";
+                el.placeholder = filename ? (filename + "…") : "Escribe tu respuesta aquí…";
+                el.spellcheck = false;
+                enableTabKey(el);
+            } else {
+                el.type = "text";
+                el.id = "userAnswer";
+                el.placeholder = "Escribe tu respuesta aquí…";
+            }
+
+            container.appendChild(el);
+        }
+
+        function buildTabbedEditor(q, container) {
+            const tabsBar = document.createElement("div");
+            tabsBar.className = "tabs-bar";
+
+            q.files.forEach((f, i) => {
+                const btn = document.createElement("button");
+                btn.className = "tab-btn" + (i === 0 ? " active" : "");
+                btn.textContent = f.name || ("archivo-" + (i + 1));
+                btn.onclick = () => switchTab(i);
+                tabsBar.appendChild(btn);
+            });
+
+            container.appendChild(tabsBar);
+
+            q.files.forEach((f, i) => {
+                const panel = document.createElement("div");
+                panel.className = "tab-panel" + (i === 0 ? " active" : "");
+                panel.id = "tabPanel" + i;
+
+                const ta = document.createElement("textarea");
+                ta.className = "code-input";
+                ta.id = "codeInput" + i;
+                ta.placeholder = (f.name || ("archivo-" + (i + 1))) + "…";
+                ta.spellcheck = false;
+                ta.value = getFileInitialContent(f);
+                enableTabKey(ta);
+
+                panel.appendChild(ta);
+                container.appendChild(panel);
+            });
+        }
+
+        function switchTab(idx) {
+            document.querySelectorAll(".tab-btn").forEach((b, i) => b.classList.toggle("active", i === idx));
+            document.querySelectorAll(".tab-panel").forEach((p, i) => p.classList.toggle("active", i === idx));
+        }
+
+        function getFileInitialContent(file) {
+            return String(
+                file?.starter ??
+                file?.initial ??
+                file?.template ??
+                file?.content ??
+                file?.code ??
+                ""
+            );
+        }
+
+        function getFileExpectedContent(file) {
+            return String(
+                file?.answer ??
+                file?.expected ??
+                ""
+            );
+        }
+
+        /* ═══════════════════ USER INTERACTION ═══════════════════ */
+        function selectOption(idx, isMulti) {
+            if (answerChecked) return;
+            const opts = document.querySelectorAll(".option");
+
+            if (isMulti) {
+                if (selectedOptions.has(idx)) {
+                    selectedOptions.delete(idx);
+                    opts[idx].classList.remove("selected");
+                } else {
+                    selectedOptions.add(idx);
+                    opts[idx].classList.add("selected");
+                }
+            } else {
+                opts.forEach(o => o.classList.remove("selected"));
+                selectedOptions.clear();
+                selectedOptions.add(idx);
+                opts[idx].classList.add("selected");
+            }
+        }
+
+        function checkAnswer() {
+            if (answerChecked) return;
+
+            const q = questions[currentQuestion];
+            const key = getQuestionKey(q);
+            triesMap.set(key, (triesMap.get(key) || 0) + 1);
+            totalTriesCount++;
+            updateStats();
+
+            const answerDiv = document.getElementById("answer");
+
+            if (q.type === "multiple") {
+                checkMultipleChoice(q, answerDiv);
+            } else if (q.type === "exact" || q.type === "command") {
+                checkExactOrCommand(q, answerDiv);
+            } else if (q.type === "figure" || q.type === "code") {
+                checkCodeOrFigure(q, answerDiv);
+            } else {
+                checkTheory(q, answerDiv);
+            }
+            saveProgress();
+        }
+
+        function checkMultipleChoice(q, answerDiv) {
+            const correctAnswers = getCorrectAnswers(q);
+            const selectedAnswers = Array.from(selectedOptions).map(i => q.options[i]);
+            const isCorrect =
+                selectedOptions.size > 0 &&
+                correctAnswers.length === selectedAnswers.length &&
+                correctAnswers.every(a => selectedAnswers.includes(a)) &&
+                selectedAnswers.every(a => correctAnswers.includes(a));
+
+            const opts = document.querySelectorAll(".option");
+            q.options.forEach((opt, idx) => {
+                const isC = correctAnswers.includes(opt);
+                const isS = selectedOptions.has(idx);
+                if (isC && isS) opts[idx].classList.add("correct");
+                else if (isC && !isS) opts[idx].classList.add("missed");
+                else if (!isC && isS) opts[idx].classList.add("incorrect");
+            });
+
+            let html = "";
+            if (isCorrect) {
+                html += '<strong class="result-ok">Correcto ✓</strong>';
+                stats.correct++;
+                answerDiv.className = "answer show correct-answer";
+            } else {
+                html += '<strong class="result-ko">Incorrecto ✗</strong>';
+                if (correctAnswers.length > 1) {
+                    html += "<br>Respuestas correctas:<ul>";
+                    correctAnswers.forEach(ans => {
+                        html += "<li>" + richToHTML(ans) + "</li>";
+                    });
+                    html += "</ul>";
+                } else {
+                    html += "<br>La respuesta correcta es: " + richToHTML(correctAnswers[0] || "");
+                }
+                stats.incorrect++;
+                addToFailedQuestions(q);
+                answerDiv.className = "answer show incorrect-answer";
+            }
+
+            const tries = triesInfoHTML(q);
+            if (tries) html += "<br>" + tries;
+
+            answerDiv.innerHTML = appendExtrasHTML(q, html);
+            applyExtrasRendering(answerDiv);
+
+            answerChecked = true;
+            updateStats();
+        }
+
+        function checkExactOrCommand(q, answerDiv) {
+            const input = document.getElementById("userAnswer");
+            const userAnswer = input ? input.value : "";
+            const isCorrect =
+                userAnswer.trim().length > 0 &&
+                normalizeAnswer(userAnswer) === normalizeAnswer(q.a);
+
+            let html = "";
+            if (isCorrect) {
+                if (input) input.classList.add("correct");
+                html = '<strong class="result-ok">Correcto ✓</strong>';
+                stats.correct++;
+                answerDiv.className = "answer show correct-answer";
+            } else {
+                if (input) input.classList.add("incorrect");
+                html = '<strong class="result-ko">Incorrecto ✗</strong><br>La respuesta correcta es: ' + richToHTML(q.a);
+                stats.incorrect++;
+                addToFailedQuestions(q);
+                answerDiv.className = "answer show incorrect-answer";
+            }
+
+            const tries = triesInfoHTML(q);
+            if (tries) html += "<br>" + tries;
+
+            answerDiv.innerHTML = appendExtrasHTML(q, html);
+            applyExtrasRendering(answerDiv);
+
+            answerChecked = true;
+            updateStats();
+        }
+
+        function checkTheory(q, answerDiv) {
+            const input = document.getElementById("userAnswer");
+            const userAnswer = input ? input.value : "";
+            const normalizedUser = normalizeAnswer(userAnswer);
+            const normalizedCorrect = normalizeAnswer(q.a);
+
+            if (normalizedUser && (normalizedUser === normalizedCorrect || normalizedCorrect.includes(normalizedUser))) {
+                if (input) input.classList.add("correct");
+                let html = '<strong class="result-ok">Correcto ✓</strong><br>Respuesta: ' + richToHTML(q.a);
+                const tries = triesInfoHTML(q);
+                if (tries) html += "<br>" + tries;
+                answerDiv.innerHTML = appendExtrasHTML(q, html);
+                answerDiv.className = "answer show correct-answer";
+                applyExtrasRendering(answerDiv);
+                stats.correct++;
+                answerChecked = true;
+                updateStats();
+                return;
+            }
+
+            let html = '<strong class="result-warn">Corrección manual</strong><br>Respuesta esperada:<br>' + richToHTML(q.a);
+            const tries = triesInfoHTML(q);
+            if (tries) html += "<br>" + tries;
+            html = appendExtrasHTML(q, html);
+            html += '<div class="action-buttons">' +
+                '<button class="btn-correct-m" onclick="markCorrect()">✓ Correcto</button>' +
+                '<button class="btn-incorrect-m" onclick="markIncorrect()">✗ Incorrecto</button>' +
+                '</div>';
+
+            if (input && userAnswer.trim()) {
+                input.classList.add("incorrect");
+            }
+
+            answerDiv.innerHTML = html;
+            answerDiv.className = "answer show warning-answer";
+            applyExtrasRendering(answerDiv);
+        }
+
+        function checkCodeOrFigure(q, answerDiv) {
+            const userFiles = [];
+
+            if (Array.isArray(q.files) && q.files.length > 0) {
+                q.files.forEach((f, i) => {
+                    const ta = document.getElementById("codeInput" + i);
+                    userFiles.push({
+                        name: f.name || ("archivo-" + (i + 1)),
+                        code: ta ? ta.value : ""
+                    });
+                });
+            } else {
+                const ta = document.getElementById("userAnswer");
+                userFiles.push({ name: "respuesta", code: ta ? ta.value : "" });
+            }
+
+            let userFullHTML = buildRenderableHTML(q, userFiles);
+
+            const errBox = document.getElementById("syntaxErrors");
+            errBox.classList.remove("show");
+            errBox.innerHTML = "";
+
+            if (window._quiz4ErrorHandler) {
+                window.removeEventListener("message", window._quiz4ErrorHandler);
+            }
+
+            window._quiz4ErrorHandler = function(event) {
+                if (!event.data || !event.data.quizErrors) return;
+                const errors = event.data.quizErrors;
+                if (!errors.length) return;
+
+                let html = '<div class="err-title">Errores detectados en tu código</div>';
+                errors.forEach(err => {
+                    let detail = "";
+                    if (err.type === "js") {
+                        detail = "<b>JS</b>";
+                        if (err.line) detail += " (línea " + err.line + ")";
+                        detail += ": " + escapeHTML(err.msg || "");
+                    } else {
+                        detail = "<b>CSS</b>: " + escapeHTML(err.msg || "");
+                    }
+                    html += '<div class="err-item">' + detail + '</div>';
+                });
+
+                errBox.innerHTML = html;
+                errBox.classList.add("show");
+            };
+
+            window.addEventListener("message", window._quiz4ErrorHandler);
+
+            const userPrevContainer = document.getElementById("userPreviewContainer");
+            const userPrevIframe = document.getElementById("userPreviewIframe");
+            userPrevContainer.classList.remove("hidden");
+            requestAnimationFrame(() => {
+                userPrevIframe.srcdoc = userFullHTML;
+            });
+
+            let expectedHTML = '<strong class="result-warn">Corrección manual</strong>';
+
+            if (Array.isArray(q.files) && q.files.length > 0) {
+                const hasExpected = q.files.some(f => getFileExpectedContent(f).trim().length > 0);
+                if (hasExpected) {
+                    expectedHTML += "<br>Respuesta esperada:";
+                    q.files.forEach(f => {
+                        const expected = getFileExpectedContent(f);
+                        if (expected.trim().length > 0) {
+                            expectedHTML += '<br><strong>' + escapeHTML(f.name || "archivo") + ":</strong>";
+                            expectedHTML += '<pre>' + escapeHTML(expected) + '</pre>';
+                        }
+                    });
+                } else if (q.a) {
+                    expectedHTML += "<br>" + richToHTML(q.a);
+                }
+            } else if (q.a) {
+                expectedHTML += "<br>" + richToHTML(q.a);
+            }
+
+            const tries = triesInfoHTML(q);
+            if (tries) expectedHTML += "<br>" + tries;
+
+            expectedHTML = appendExtrasHTML(q, expectedHTML);
+            expectedHTML += '<div class="action-buttons">' +
+                '<button class="btn-correct-m" onclick="markCorrect()">✓ Correcto</button>' +
+                '<button class="btn-incorrect-m" onclick="markIncorrectWithRetry()">✗ Incorrecto</button>' +
+                '</div>';
+
+            answerDiv.innerHTML = expectedHTML;
+            answerDiv.className = "answer show warning-answer";
+            applyExtrasRendering(answerDiv);
+        }
+
+        function buildRenderableHTML(q, userFiles) {
+            let cssCode = "";
+            let jsCode = "";
+            let mainCode = "";
+
+            userFiles.forEach(f => {
+                const name = String(f.name || "").toLowerCase();
+                if (name.endsWith(".css")) {
+                    cssCode += f.code + "\n";
+                } else if (name.endsWith(".js") || name.includes("jquery") || name.includes("script")) {
+                    jsCode += f.code + "\n";
+                } else {
+                    mainCode += f.code + "\n";
+                }
+            });
+
+            let html = '<!DOCTYPE html><html><head><meta charset="UTF-8">';
+            html += '<script src="' + JQUERY_CDN + '"><\/script>';
+            html += '<script>';
+            html += 'var __errors = [];';
+            html += 'window.onerror = function(msg, src, line, col) {';
+            html += '  __errors.push({type:"js", msg: String(msg || ""), line: line || 0, col: col || 0});';
+            html += '  parent.postMessage({quizErrors: __errors}, "*");';
+            html += '  return true;';
+            html += '};';
+            html += '<\/script>';
+
+            if (cssCode.trim()) {
+                html += '<style>' + cssCode + '<\/style>';
+            }
+
+            html += '</head><body>';
+
+            if (q.html_context) {
+                const bodyMatch = String(q.html_context).match(/<body[^>]*>([\s\S]*)<\/body>/i);
+                html += bodyMatch ? bodyMatch[1] : String(q.html_context);
+            }
+
+            if (mainCode.trim()) {
+                html += mainCode;
+            }
+
+            if (jsCode.trim()) {
+                html += '<script>' + jsCode + '<\/script>';
+            }
+
+            html += '<script>';
+            html += 'window.addEventListener("load", function() {';
+            html += '  try {';
+            html += '    var sheets = document.styleSheets;';
+            html += '    for (var s = 0; s < sheets.length; s++) {';
+            html += '      try {';
+            html += '        var rules = sheets[s].cssRules || sheets[s].rules;';
+            html += '        if (!rules || rules.length === 0) {';
+            html += '          var owner = sheets[s].ownerNode;';
+            html += '          if (owner && owner.tagName === "STYLE" && owner.textContent.trim().length > 0) {';
+            html += '            __errors.push({type:"css", msg:"Hoja de estilos vacía tras parsear — posible error de sintaxis CSS"});';
+            html += '          }';
+            html += '        }';
+            html += '      } catch(e) {';
+            html += '        __errors.push({type:"css", msg:"Error accediendo a reglas CSS: " + e.message});';
+            html += '      }';
+            html += '    }';
+            html += '  } catch(e) {}';
+            html += '  parent.postMessage({quizErrors: __errors}, "*");';
+            html += '});';
+            html += '<\/script>';
+
+            html += '</body></html>';
+            return html;
+        }
+
+        /* ═══════════════════ MANUAL MARKING / RETRY ═══════════════════ */
+        function markCorrect() {
+            if (answerChecked) return;
+            const q = questions[currentQuestion];
+            const answerDiv = document.getElementById("answer");
+
+            stats.correct++;
+            answerChecked = true;
+            answerDiv.className = "answer show correct-answer";
+
+            const existing = answerDiv.innerHTML;
+            answerDiv.innerHTML = '<strong class="result-ok">Marcado como correcto ✓</strong><br>' + existing;
+
+            const btns = answerDiv.querySelector(".action-buttons");
+            if (btns) btns.remove();
+
+            updateStats();
+            applyExtrasRendering(answerDiv);
+            saveProgress();
+        }
+
+        function markIncorrect() {
+            if (answerChecked) return;
+            const q = questions[currentQuestion];
+            const answerDiv = document.getElementById("answer");
+
+            stats.incorrect++;
+            answerChecked = true;
+            answerDiv.className = "answer show incorrect-answer";
+
+            const existing = answerDiv.innerHTML;
+            answerDiv.innerHTML = '<strong class="result-ko">Marcado como incorrecto ✗</strong><br>' + existing;
+
+            const btns = answerDiv.querySelector(".action-buttons");
+            if (btns) btns.remove();
+
+            addToFailedQuestions(q);
+            updateStats();
+            applyExtrasRendering(answerDiv);
+            saveProgress();
+        }
+
+        function markIncorrectWithRetry() {
+            if (answerChecked) return;
+            const answerDiv = document.getElementById("answer");
+            const btns = answerDiv.querySelector(".action-buttons");
+            if (btns) {
+                btns.innerHTML =
+                    '<button class="btn-retry" onclick="retryQuestion()">↻ Reintentar</button>' +
+                    '<button class="btn-skip" onclick="skipQuestion()">Saltar →</button>';
+            }
+        }
+
+        function retryQuestion() {
+            answerChecked = false;
+            const answerDiv = document.getElementById("answer");
+            answerDiv.className = "answer";
+            answerDiv.innerHTML = "";
+            clearCodePreview();
+
+            const q = questions[currentQuestion];
+            if (Array.isArray(q.files) && q.files.length > 0) {
+                q.files.forEach((f, i) => {
+                    const ta = document.getElementById("codeInput" + i);
+                    if (ta) ta.classList.remove("correct", "incorrect");
+                });
+            } else {
+                const input = document.getElementById("userAnswer");
+                if (input) input.classList.remove("correct", "incorrect");
+            }
+        }
+
+        function skipQuestion() {
+            if (answerChecked) return;
+            const q = questions[currentQuestion];
+            const answerDiv = document.getElementById("answer");
+
+            stats.incorrect++;
+            answerChecked = true;
+            addToFailedQuestions(q);
+            updateStats();
+
+            const btns = answerDiv.querySelector(".action-buttons");
+            if (btns) {
+                btns.innerHTML = '<strong class="result-ko">Saltada — marcada como incorrecta</strong>';
+            }
+            answerDiv.className = "answer show incorrect-answer";
+            applyExtrasRendering(answerDiv);
+            saveProgress();
+        }
+       
+        /* ═══════════════════ CONTROL POR TECLADO (SELECCIÓN AUTOMÁTICA) ═══════════════════ */
+let focusedOptionIndex = -1; 
+
+document.addEventListener("keydown", function(e) {
+    const activeElem = document.activeElement;
+    // Si estás escribiendo en un cuadro de texto, las flechas no deben cambiar la selección
+    const isTyping = activeElem.tagName === "TEXTAREA" || 
+                     (activeElem.tagName === "INPUT" && activeElem.type === "text");
+    
+    if (isTyping) return;
+
+    const options = document.querySelectorAll(".option");
+    if (options.length === 0) return;
+
+    // --- FLECHAS ARRIBA / ABAJO: Navegar y Seleccionar automáticamente ---
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        if (answerChecked) return;
+
+        // Calcular nuevo índice
+        if (e.key === "ArrowDown") {
+            focusedOptionIndex = (focusedOptionIndex + 1) % options.length;
+        } else {
+            focusedOptionIndex = (focusedOptionIndex - 1 + options.length) % options.length;
+        }
+
+        // SELECCIÓN AUTOMÁTICA: Llamamos a la función de selección del quiz
+        const q = questions[currentQuestion];
+        const isMulti = getCorrectAnswers(q).length > 1;
+        selectOption(focusedOptionIndex, isMulti);
+
+        // Hacer scroll suave si la lista es larga
+        options[focusedOptionIndex].scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+
+    // --- NÚMEROS (1-9): Selección rápida ---
+    if (e.key >= "1" && e.key <= "9") {
+        const idx = parseInt(e.key) - 1;
+        if (options[idx]) {
+            focusedOptionIndex = idx; // Sincronizamos el índice de las flechas
+            const q = questions[currentQuestion];
+            selectOption(idx, getCorrectAnswers(q).length > 1);
+        }
+    }
+
+    // --- FLECHA DERECHA / ENTER: Corregir o Siguiente ---
+    if (e.key === "ArrowRight" || e.key === "Enter") {
+        e.preventDefault();
+        if (!answerChecked) {
+            checkAnswer();
+        } else {
+            nextQuestion();
+        }
+    }
+
+    // --- FLECHA IZQUIERDA: Volver ---
+    if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        prevQuestion();
+    }
+});
+        /* ═══════════════════ NAVIGATION ═══════════════════ */
+        function nextQuestion() {
+            if (currentQuestion === questions.length - 1) {
+                if (failedQuestions.length > 0) {
+                    startReviewRound();
+                } else {
+                    clearProgress();
+                    showCompletionMessage();
+                }
+            } else {
+                currentQuestion++;
+                saveProgress();
+                loadQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            currentQuestion = currentQuestion > 0 ? currentQuestion - 1 : questions.length - 1;
+            saveProgress();
+            loadQuestion();
+        }
+
+        function startReviewRound() {
+            questions = shuffleArray(failedQuestions.slice());
+            failedQuestions = [];
+            currentQuestion = 0;
+            isReviewMode = true;
+            reviewRound++;
+            saveProgress();
+            updatePhaseIndicator();
+            loadQuestion();
+        }
+
+        function showCompletionMessage() {
+            const container = document.getElementById("optionsContainer");
+            const answerDiv = document.getElementById("answer");
+            const questionDiv = document.getElementById("question");
+            const hintDiv = document.getElementById("multiSelectHint");
+
+            document.getElementById("figurePreview").classList.add("hidden");
+            clearCodePreview();
+            document.getElementById("columnsLayout").classList.add("single-col");
+
+            questionDiv.innerHTML = "";
+            hintDiv.innerHTML = "";
+            container.innerHTML = "";
+            answerDiv.innerHTML = "";
+            answerDiv.className = "answer";
+
+            const total = stats.correct + stats.incorrect;
+            const pct = total > 0 ? Math.round((stats.correct / total) * 100) : 0;
+
+            const div = document.createElement("div");
+            div.className = "completion-message";
+            div.innerHTML = `
+                <h2>Completado</h2>
+                <p>Has respondido correctamente a todas las preguntas pendientes de revisión.</p>
+                <p><strong>Aciertos:</strong> ${stats.correct} · <strong>Fallos:</strong> ${stats.incorrect} · <strong>Porcentaje:</strong> ${pct}%</p>
+                <p><strong>Total de intentos:</strong> ${totalTriesCount}</p>
+                <button onclick="restartQuiz()">Reiniciar</button>
+            `;
+            container.appendChild(div);
+            document.getElementById("navButtons").style.display = "none";
+        }
+
+        function restartQuiz() {
+            clearProgress();
+            initQuiz(true);
+        }
+
+        function resetStats() {
+            if (confirm("¿Resetear estadísticas?")) {
+                stats = { correct: 0, incorrect: 0 };
+                totalTriesCount = 0;
+                triesMap.clear();
+                updateStats();
+                saveProgress();
+            }
+        }
+    </script>
+</body>
+</html>
