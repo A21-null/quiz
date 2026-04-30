@@ -910,7 +910,8 @@
             <br>V4 - Fusionadas funcionalidades de V2 y V3
             <br>V4.1 - Parcheado que las respuestas se ordenen aleatoriamente
             <br>V4.2 - Selección de respuesta con teclado
-            <br>V4.3 - Guardado de sesión persistente
+            <br>V4.3 - Guardado de sesión persistente            
+            <br>V4.4 - Apartado "explicacion" opcional en JSON
     </div>
     <script>
         /* ═══════════════════ CONFIG / STATE ═══════════════════ */
@@ -1253,8 +1254,9 @@
         function appendExtrasHTML(q, baseHTML) {
             let html = baseHTML || "";
 
-            if (q.details && String(q.details).trim().length > 0) {
-                html += '<div class="details-box rich-content"><strong>Explicación:</strong><br>' + richToHTML(q.details) + '</div>';
+            const explanation = q.details || q.explicacion || "";
+            if (String(explanation).trim().length > 0) {
+                html += '<div class="details-box rich-content"><strong>Explicación:</strong><br>' + richToHTML(explanation) + '</div>';
             }
 
             if (q.img_a && String(q.img_a).trim().length > 0) {
