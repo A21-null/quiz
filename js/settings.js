@@ -21,6 +21,8 @@
                 quizC.classList.add("active");
                 initQuiz();
             }
+
+            renderRecentFiles();
         }
 
         function openSettings() {
