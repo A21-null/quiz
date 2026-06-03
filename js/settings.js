@@ -14,7 +14,7 @@
             if (appMode === "recall") {
                 quizC.classList.remove("active");
                 recallC.classList.add("active");
-                Recall.start(allQuestions);
+                Recall.start(getFilteredQuestions());
             } else {
                 Recall.stop();
                 recallC.classList.remove("active");

@@ -17,6 +17,7 @@
         <div class="header-row">
             <h1>Quiz 5</h1>
             <div class="header-actions">
+                <button class="icon-btn" id="examBtn" onclick="openExamOverlay(false)" title="Filtrar exámenes" aria-label="Filtrar exámenes" style="display:none;">🗂️</button>
                 <button class="icon-btn" onclick="openSettings()" title="Ajustes" aria-label="Ajustes">⚙️</button>
                 <button class="icon-btn" onclick="goHome()" title="Inicio" aria-label="Inicio">🏠</button>
             </div>
@@ -118,6 +119,25 @@
         </div>
     </div>
 
+    <!-- Overlay de filtro de exámenes -->
+    <div class="settings-overlay" id="examOverlay" onclick="if(event.target===this)closeExamOverlay()">
+        <div class="settings-panel" role="dialog" aria-label="Filtrar exámenes">
+            <div class="settings-head">
+                <h2>Exámenes</h2>
+                <button class="settings-close" onclick="closeExamOverlay()" aria-label="Cerrar">✕</button>
+            </div>
+            <div style="padding:0 24px 20px">
+                <p style="font-size:0.84rem;color:var(--text-dim);margin-bottom:14px">Activa o desactiva exámenes. Solo aparecerán preguntas de los seleccionados.</p>
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                    <button onclick="selectAllExams(true)" class="exam-sel-btn">Todos</button>
+                    <button onclick="selectAllExams(false)" class="exam-sel-btn">Ninguno</button>
+                </div>
+                <div id="examOverlayContent" style="display:flex;flex-direction:column;gap:6px;max-height:45vh;overflow-y:auto;margin-bottom:16px;padding-right:2px"></div>
+                <button id="examApplyBtn" onclick="applyExamFilter()">Comenzar quiz</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Panel de ajustes -->
     <div class="settings-overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
         <div class="settings-panel" role="dialog" aria-label="Ajustes">
@@ -177,6 +197,7 @@
     </div>
 
     <script src="js/state.js"></script>
+    <script src="js/examFilter.js"></script>
     <script src="js/fileHistory.js"></script>
     <script src="js/quiz.js"></script>
     <script src="js/render.js"></script>

@@ -1093,6 +1093,30 @@
         }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ── Filtro de exámenes ── */
+        .exam-check-row {
+            display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+            background: var(--surface2); border-radius: 8px; border: 1px solid var(--border);
+            cursor: pointer; transition: border-color 0.15s; user-select: none;
+        }
+        .exam-check-row:hover { border-color: var(--accent-dim); }
+        .exam-check-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; cursor: pointer; }
+        .exam-check-name { flex: 1; font-size: 0.9rem; font-weight: 600; }
+        .exam-check-count { font-size: 0.78rem; color: var(--text-dim); font-family: var(--mono); white-space: nowrap; }
+        .exam-sel-btn {
+            padding: 7px 16px; background: var(--surface2); border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text); font-size: 0.84rem; font-weight: 700;
+            cursor: pointer; transition: border-color 0.15s, color 0.15s;
+        }
+        .exam-sel-btn:hover { border-color: var(--accent-dim); color: var(--accent); }
+        #examApplyBtn {
+            width: 100%; padding: 13px; background: var(--accent); color: #fff;
+            border: none; border-radius: var(--radius); font-weight: 700; font-size: 0.95rem;
+            cursor: pointer; transition: background 0.15s;
+        }
+        #examApplyBtn:hover { background: #5a7ae6; }
+        #examApplyBtn:disabled { background: var(--surface2); color: var(--text-dim); cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -1100,6 +1124,7 @@
         <div class="header-row">
             <h1>Quiz 5</h1>
             <div class="header-actions">
+                <button class="icon-btn" id="examBtn" onclick="openExamOverlay(false)" title="Filtrar exámenes" aria-label="Filtrar exámenes" style="display:none;">🗂️</button>
                 <button class="icon-btn" onclick="openSettings()" title="Ajustes" aria-label="Ajustes">⚙️</button>
                 <button class="icon-btn" onclick="goHome()" title="Inicio" aria-label="Inicio">🏠</button>
             </div>
@@ -1198,6 +1223,25 @@
 
         <div class="loading-message" id="loadingMessage">
             Carga un archivo JSON para comenzar.
+        </div>
+    </div>
+
+    <!-- Overlay de filtro de exámenes -->
+    <div class="settings-overlay" id="examOverlay" onclick="if(event.target===this)closeExamOverlay()">
+        <div class="settings-panel" role="dialog" aria-label="Filtrar exámenes">
+            <div class="settings-head">
+                <h2>Exámenes</h2>
+                <button class="settings-close" onclick="closeExamOverlay()" aria-label="Cerrar">✕</button>
+            </div>
+            <div style="padding:0 24px 20px">
+                <p style="font-size:0.84rem;color:var(--text-dim);margin-bottom:14px">Activa o desactiva exámenes. Solo aparecerán preguntas de los seleccionados.</p>
+                <div style="display:flex;gap:8px;margin-bottom:12px">
+                    <button onclick="selectAllExams(true)" class="exam-sel-btn">Todos</button>
+                    <button onclick="selectAllExams(false)" class="exam-sel-btn">Ninguno</button>
+                </div>
+                <div id="examOverlayContent" style="display:flex;flex-direction:column;gap:6px;max-height:45vh;overflow-y:auto;margin-bottom:16px;padding-right:2px"></div>
+                <button id="examApplyBtn" onclick="applyExamFilter()">Comenzar quiz</button>
+            </div>
         </div>
     </div>
 
@@ -1357,7 +1401,7 @@
             }
             document.getElementById("fileStatus").textContent = label + " · " + allQuestions.length + " preguntas";
             document.getElementById("loadingMessage").style.display = "none";
-            startActiveMode();
+            onQuestionsLoaded();
             return allQuestions.length;
         }
 
@@ -1480,9 +1524,8 @@
 
                     document.getElementById("fileStatus").textContent = file.name + " · " + allQuestions.length + " preguntas";
                     document.getElementById("loadingMessage").style.display = "none";
-                    document.getElementById("quizContainer").classList.add("active");
 
-                    startActiveMode();
+                    onQuestionsLoaded();
                     recordFileHistory(file.name, file.name, e.target.result, allQuestions.length);
                     renderRecentFiles();
                     // Refleja el archivo en la URL (#hash). lastLoadedKey antes evita recarga doble.
@@ -1531,7 +1574,7 @@
             }
 
             if (!restored) {
-                questions = shuffleArray(allQuestions.slice());
+                questions = shuffleArray(getFilteredQuestions());
                 currentQuestion = 0;
                 stats = { correct: 0, incorrect: 0 };
                 failedQuestions = [];
@@ -3029,6 +3072,110 @@ document.addEventListener("keydown", function(e) {
             };
         })();
         window.Recall = Recall;
+
+        /* ═══════════════════ FILTRO DE EXÁMENES ═══════════════════ */
+        let examList = [];
+        let activeExams = new Set();
+        let _examCounts = new Map();
+
+        function _examKey(q) {
+            const v = q.exam;
+            return (v != null && String(v).trim() !== "") ? String(v).trim() : "__no_exam__";
+        }
+        function _examLabel(key) { return key === "__no_exam__" ? "Sin examen" : key; }
+
+        function buildExamList() {
+            _examCounts = new Map();
+            allQuestions.forEach(function(q) {
+                const k = _examKey(q);
+                _examCounts.set(k, (_examCounts.get(k) || 0) + 1);
+            });
+            examList = Array.from(_examCounts.keys()).sort(function(a, b) {
+                if (a === "__no_exam__") return -1;
+                if (b === "__no_exam__") return 1;
+                return a.localeCompare(b, "es");
+            });
+            activeExams = new Set(examList);
+            _syncExamBtn();
+        }
+
+        function getFilteredQuestions() {
+            if (activeExams.size >= examList.length) return allQuestions.slice();
+            return allQuestions.filter(function(q) { return activeExams.has(_examKey(q)); });
+        }
+
+        function openExamOverlay(isFirstLoad) {
+            _renderExamOverlayContent();
+            document.getElementById("examApplyBtn").textContent = isFirstLoad ? "Comenzar quiz" : "Aplicar y reiniciar";
+            document.getElementById("examOverlay").classList.add("open");
+        }
+        function closeExamOverlay() {
+            document.getElementById("examOverlay").classList.remove("open");
+        }
+
+        function _renderExamOverlayContent() {
+            const box = document.getElementById("examOverlayContent");
+            box.innerHTML = examList.map(function(k) {
+                return '<label class="exam-check-row">' +
+                    '<input type="checkbox" data-key="' + escapeHTML(k) + '"' +
+                        (activeExams.has(k) ? " checked" : "") +
+                        ' onchange="syncExamCheckboxes()">' +
+                    '<span class="exam-check-name">' + escapeHTML(_examLabel(k)) + '</span>' +
+                    '<span class="exam-check-count">' + (_examCounts.get(k) || 0) + ' preg.</span>' +
+                    '</label>';
+            }).join("");
+            _updateApplyBtn();
+        }
+
+        function syncExamCheckboxes() {
+            activeExams.clear();
+            document.querySelectorAll("#examOverlayContent input[data-key]:checked").forEach(function(cb) {
+                activeExams.add(cb.dataset.key);
+            });
+            _updateApplyBtn();
+        }
+
+        function selectAllExams(all) {
+            activeExams = all ? new Set(examList) : new Set();
+            _renderExamOverlayContent();
+        }
+
+        function _updateApplyBtn() {
+            const n = Array.from(activeExams).reduce(function(s, k) {
+                return s + (_examCounts.get(k) || 0);
+            }, 0);
+            const btn = document.getElementById("examApplyBtn");
+            if (!btn) return;
+            const label = btn.textContent.split("·")[0].trim();
+            btn.textContent = label + " · " + n + " preguntas";
+            btn.disabled = (n === 0);
+        }
+
+        function applyExamFilter() {
+            syncExamCheckboxes();
+            closeExamOverlay();
+            clearProgress();
+            startActiveMode();
+        }
+
+        function _syncExamBtn() {
+            const btn = document.getElementById("examBtn");
+            if (btn) btn.style.display = examList.length > 1 ? "" : "none";
+        }
+
+        function onQuestionsLoaded() {
+            buildExamList();
+            if (examList.length > 1) {
+                openExamOverlay(true);
+            } else {
+                startActiveMode();
+            }
+        }
+
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "Escape") closeExamOverlay();
+        });
+
         /* ═══════════════════ AJUSTES + CONTROL DE MODO ═══════════════════
            Panel de ajustes (engranaje de la cabecera): cambia de modo Test/Recall,
            tema claro/oscuro, activa/desactiva el almacenamiento local y permite
@@ -3045,7 +3192,7 @@ document.addEventListener("keydown", function(e) {
             if (appMode === "recall") {
                 quizC.classList.remove("active");
                 recallC.classList.add("active");
-                Recall.start(allQuestions);
+                Recall.start(getFilteredQuestions());
             } else {
                 Recall.stop();
                 recallC.classList.remove("active");

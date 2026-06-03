@@ -18,9 +18,8 @@
 
                     document.getElementById("fileStatus").textContent = file.name + " · " + allQuestions.length + " preguntas";
                     document.getElementById("loadingMessage").style.display = "none";
-                    document.getElementById("quizContainer").classList.add("active");
 
-                    startActiveMode();
+                    onQuestionsLoaded();
                     recordFileHistory(file.name, file.name, e.target.result, allQuestions.length);
                     renderRecentFiles();
                     // Refleja el archivo en la URL (#hash). lastLoadedKey antes evita recarga doble.
@@ -69,7 +68,7 @@
             }
 
             if (!restored) {
-                questions = shuffleArray(allQuestions.slice());
+                questions = shuffleArray(getFilteredQuestions());
                 currentQuestion = 0;
                 stats = { correct: 0, incorrect: 0 };
                 failedQuestions = [];

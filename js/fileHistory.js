@@ -54,7 +54,7 @@
             }
             document.getElementById("fileStatus").textContent = label + " · " + allQuestions.length + " preguntas";
             document.getElementById("loadingMessage").style.display = "none";
-            startActiveMode();
+            onQuestionsLoaded();
             return allQuestions.length;
         }
 
