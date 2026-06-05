@@ -33,6 +33,7 @@ El campo `q` y las `options` admiten HTML inline (`<table>`, `<code>`, `<br>`, e
 ## Modos
 * Normal: Modo predeterminado, enseña la pregunta --> respondes --> corriges respuesta
 * Recall: Sale la pregunta, te enseña la respuesta un tiempo límite, te la lees, luego te la oculta y tienes que escribirla de memoria.
+* Minijuego: un poco de dopamina para tus descansos.
 
 ## Ficheros
 

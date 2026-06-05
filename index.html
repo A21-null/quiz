@@ -18,6 +18,7 @@
             <h1>Quiz 5</h1>
             <div class="header-actions">
                 <button class="icon-btn" id="examBtn" onclick="openExamOverlay(false)" title="Filtrar exámenes" aria-label="Filtrar exámenes" style="display:none;">🗂️</button>
+                <button class="icon-btn" onclick="openMinigame()" title="Minijuego" aria-label="Minijuego">🎮</button>
                 <button class="icon-btn" onclick="openSettings()" title="Ajustes" aria-label="Ajustes">⚙️</button>
                 <button class="icon-btn" onclick="goHome()" title="Inicio" aria-label="Inicio">🏠</button>
             </div>
@@ -196,6 +197,30 @@
         </div>
     </div>
 
+    <!-- Panel minijuego -->
+    <div class="minigame-panel" id="minigamePanel">
+        <div class="minigame-head">
+            <span class="minigame-title">🎮 Minijuego</span>
+            <div style="display:flex;gap:6px;align-items:center;">
+                <button class="settings-close" id="mgPauseBtn" onclick="togglePause()" title="Pausar" aria-label="Pausar" style="display:none;">⏸</button>
+                <button class="settings-close" onclick="closeMinigame()" title="Cerrar" aria-label="Cerrar">✕</button>
+            </div>
+        </div>
+        <div class="minigame-body">
+            <div class="mg-wrap">
+                <canvas id="mgCanvas" width="328" height="500"></canvas>
+                <div class="mg-controls">
+                    <button class="mg-btn" id="mgLeft" aria-label="Mover izquierda">&#8592;</button>
+                    <button class="mg-btn mg-btn--jump" id="mgJump" aria-label="Saltar">&#8593;</button>
+                    <button class="mg-btn" id="mgRight" aria-label="Mover derecha">&#8594;</button>
+                </div>
+                <div class="mg-controls-aux">
+                    <button class="mg-btn-aux" id="mgMute" title="Silenciar">🔊</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="js/state.js"></script>
     <script src="js/examFilter.js"></script>
     <script src="js/fileHistory.js"></script>
@@ -206,5 +231,6 @@
     <script src="js/controls.js"></script>
     <script src="js/recall.js"></script>
     <script src="js/settings.js"></script>
+    <script src="js/minigame.js"></script>
 </body>
 </html>
