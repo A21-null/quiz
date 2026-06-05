@@ -1181,6 +1181,9 @@
         .mg-controls {
             display: flex; gap: 8px;
         }
+        .mg-controls-aux {
+            display: flex; justify-content: flex-end; margin-top: 4px;
+        }
         .mg-btn {
             flex: 1;
             height: 44px;
@@ -1193,5 +1196,30 @@
             transition: border-color 0.15s, color 0.15s, background 0.15s;
             user-select: none;
         }
+        .mg-btn--jump {
+            border-color: rgba(255,107,53,0.4);
+            color: #ff6b35;
+            flex: 0 0 80px;
+        }
+        .mg-btn--jump:hover { border-color: #ff6b35; color: #ff8c5a; }
         .mg-btn:hover { border-color: var(--accent-dim); color: var(--accent); }
         .mg-btn:active { background: var(--surface); transform: scale(0.95); }
+        .mg-btn-aux {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            opacity: 0.5;
+            padding: 2px 6px;
+            border-radius: 6px;
+            transition: opacity 0.15s;
+        }
+        .mg-btn-aux:hover { opacity: 1; }
+
+        @media (max-width: 600px) {
+            .minigame-panel { width: 100vw; }
+            body.minigame-open { margin-right: 0; }
+            .mg-wrap { width: 100%; }
+            #mgCanvas { width: 100%; height: auto; aspect-ratio: 328 / 500; }
+            .mg-btn { height: 56px; }
+        }
