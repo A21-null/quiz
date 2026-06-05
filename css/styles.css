@@ -1131,3 +1131,67 @@
         }
         #examApplyBtn:hover { background: #5a7ae6; }
         #examApplyBtn:disabled { background: var(--surface2); color: var(--text-dim); cursor: not-allowed; }
+
+        /* ── Minijuego side panel ── */
+        body {
+            transition: margin-right 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        body.minigame-open {
+            margin-right: 360px;
+        }
+
+        .minigame-panel {
+            position: fixed;
+            top: 0; right: 0;
+            width: 360px;
+            height: 100vh;
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            z-index: 9001;
+            display: flex; flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .minigame-panel.open { transform: translateX(0); }
+
+        .minigame-head {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .minigame-title { font-weight: 700; font-size: 1rem; }
+
+        .minigame-body {
+            flex: 1; overflow-y: auto;
+            padding: 16px;
+            display: flex; align-items: flex-start; justify-content: center;
+        }
+        .mg-wrap {
+            display: flex; flex-direction: column; gap: 8px;
+            width: 328px;
+        }
+        #mgCanvas {
+            display: block;
+            border-radius: 10px;
+            cursor: pointer;
+            touch-action: none;
+            width: 328px; height: 500px;
+        }
+        .mg-controls {
+            display: flex; gap: 8px;
+        }
+        .mg-btn {
+            flex: 1;
+            height: 44px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-dim);
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s, background 0.15s;
+            user-select: none;
+        }
+        .mg-btn:hover { border-color: var(--accent-dim); color: var(--accent); }
+        .mg-btn:active { background: var(--surface); transform: scale(0.95); }

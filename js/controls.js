@@ -2,6 +2,7 @@
 let focusedOptionIndex = -1; 
 
 document.addEventListener("keydown", function(e) {
+    if (typeof gameState !== "undefined" && gameState === "playing") return;
     if (appMode === "recall") return;   // en modo Recall manda su propio control de teclado
     const activeElem = document.activeElement;
     // Si estás escribiendo en un cuadro de texto, las flechas no deben cambiar la selección

@@ -404,6 +404,7 @@
 
             /* ── Teclado (solo actúa en modo Recall) ── */
             document.addEventListener("keydown", e => {
+                if (typeof gameState !== "undefined" && gameState === "playing") return;
                 if (appMode !== "recall") return;
                 const el = document.activeElement;
                 const typing = el && (el.tagName === "TEXTAREA" || (el.tagName === "INPUT" && el.type !== "checkbox"));
